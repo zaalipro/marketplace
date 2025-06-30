@@ -1,0 +1,65 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { LISTING_CATEGORIES, SORT_OPTIONS } from "@/utils/constants";
+
+interface FilterState {
+  search: string;
+  category: string;
+  sortBy: string;
+}
+
+export default function ListingFilters() {
+  const router = useRouter();
+  const searchParams = new URLSearchParams(window.location.search);
+
+  const [filters, setFilters] = useState<FilterState>({
+    search: searchParams.get("query") || "",
+    category: searchParams.get("category") || "",
+    sortBy: searchParams.get("sortBy") || "",
+  });
+
+  const handleFilterChange = (field: keyof FilterState, value: string) => {
+    setFilters((prev) => ({ ...prev, [field]: value }));
+    updateUrlParams(field, value);
+  };
+
+  const updateUrlParams = (field: keyof FilterState, value: string) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set(field === 'search' ? 'query' : field, value);
+    router.push(`?${params.toString()}`);
+  };
+
+  return (
+    <div className="flex items-center gap-4">
+      <input
+        type="text"
+        placeholder="Search listings..."
+        value={filters.search}
+        onChange={(e) => handleFilterChange('search', e.target.value)}
+        className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+      />
+      <select
+        value={filters.category}
+        onChange={(e) => handleFilterChange('category', e.target.value)}
+        className="px-4 py-2 border rounded-lg"
+      >
+        <option value="">All Categories</option>
+        <option value={LISTING_CATEGORIES.ELECTRONICS}>Electronics</option>
+        <option value={LISTING_CATEGORIES.FASHION}>Fashion</option>
+        <option value={LISTING_CATEGORIES.HOME}>Home & Living</option>
+      </select>
+      <select
+        value={filters.sortBy}
+        onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+        className="px-4 py-2 border rounded-lg"
+      >
+        <option value="">Sort by</option>
+        <option value={SORT_OPTIONS.PRICE_LOW}>Price: Low to High</option>
+        <option value={SORT_OPTIONS.PRICE_HIGH}>Price: High to Low</option>
+        <option value={SORT_OPTIONS.NEWEST}>Newest First</option>
+      </select>
+    </div>
+  );
+}
